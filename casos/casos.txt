@@ -1,0 +1,58 @@
+# =====================================================================
+# ARCHIVO ÚNICO DE CASOS DE PRUEBA
+# ---------------------------------------------------------------------
+# Formato:
+#   [nombre_del_caso]   -> una línea entre corchetes inicia un caso nuevo
+#   hecho               -> un hecho observado por línea (lo que el usuario ve o mide)
+#   # texto             -> comentario (el programa lo ignora)
+# Los nombres de los hechos deben existir en conocimiento/red_fallas.json
+# =====================================================================
+
+[caso1_router_apagado]
+# Nadie tiene Internet y el router no enciende
+sin_internet_todos_dispositivos
+router_sin_luces
+ping_gateway_falla
+
+[caso2_caida_proveedor]
+# La red local funciona pero no sale a Internet y la luz WAN está roja
+sin_internet_todos_dispositivos
+luz_internet_roja
+ping_gateway_ok
+ping_8888_falla
+
+[caso3_fallo_dns]
+# Responde el ping por IP (8.8.8.8) pero no por nombre (google.com)
+sin_internet_un_dispositivo
+ping_gateway_ok
+ping_8888_ok
+ping_dominio_falla
+
+[caso4_cable_danado]
+# Un equipo por cable, sin respuesta del router (cadena de 4 reglas)
+sin_internet_un_dispositivo
+cable_ethernet_suelto_o_danado
+ping_gateway_falla
+
+[caso5_wifi_lento]
+# Poca señal WiFi y navegación lenta
+wifi_senal_baja
+navegacion_lenta
+
+[caso6_sin_ip_dhcp]
+# El equipo tiene IP 169.254.x.x y no ve al router
+sin_internet_un_dispositivo
+ip_169_254
+ping_gateway_falla
+
+[caso7_conflicto_proveedor_vs_config]
+# Dos causas posibles a la vez: sirve para mostrar la resolución de conflictos
+sin_internet_todos_dispositivos
+cambio_reciente_config_router
+luz_internet_roja
+ping_gateway_ok
+ping_8888_falla
+
+[caso8_no_concluyente]
+# Datos insuficientes: el sistema debe decir que no puede concluir
+navegacion_lenta
