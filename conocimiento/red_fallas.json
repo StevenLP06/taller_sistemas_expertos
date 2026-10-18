@@ -1,0 +1,69 @@
+{
+  "nombre": "Diagnóstico de fallas de red / Internet (hogar o pequeña oficina)",
+  "version": "1.1 (20 reglas)",
+
+  "hechos": {
+    "sin_internet_todos_dispositivos": {"tipo": "observacion", "descripcion": "Ningún dispositivo de la red tiene Internet"},
+    "sin_internet_un_dispositivo":     {"tipo": "observacion", "descripcion": "Solo un dispositivo no tiene Internet (los demás funcionan)"},
+    "router_sin_luces":                {"tipo": "observacion", "descripcion": "El router tiene todas las luces apagadas"},
+    "luz_internet_roja":               {"tipo": "observacion", "descripcion": "La luz de Internet/WAN del router está roja o apagada"},
+    "cable_ethernet_suelto_o_danado":  {"tipo": "observacion", "descripcion": "El cable de red (Ethernet) está suelto, doblado o dañado"},
+    "ip_169_254":                      {"tipo": "observacion", "descripcion": "El equipo tiene una IP que empieza por 169.254 (sin IP válida)"},
+    "ping_gateway_ok":                 {"tipo": "observacion", "descripcion": "El ping al router (puerta de enlace) responde"},
+    "ping_gateway_falla":              {"tipo": "observacion", "descripcion": "El ping al router (puerta de enlace) NO responde"},
+    "ping_8888_ok":                    {"tipo": "observacion", "descripcion": "El ping a 8.8.8.8 (Internet por IP) responde"},
+    "ping_8888_falla":                 {"tipo": "observacion", "descripcion": "El ping a 8.8.8.8 (Internet por IP) NO responde"},
+    "ping_dominio_falla":              {"tipo": "observacion", "descripcion": "El ping a google.com (por nombre) NO responde"},
+    "wifi_senal_baja":                 {"tipo": "observacion", "descripcion": "La señal WiFi es débil (1 o 2 barras)"},
+    "navegacion_lenta":                {"tipo": "observacion", "descripcion": "La navegación o las descargas son muy lentas"},
+    "cambio_reciente_config_router":   {"tipo": "observacion", "descripcion": "Se cambió la configuración del router recientemente"},
+
+    "falla_general":                   {"tipo": "intermedio", "descripcion": "La falla afecta a toda la red"},
+    "falla_local_dispositivo":         {"tipo": "intermedio", "descripcion": "La falla afecta solo a un dispositivo"},
+    "sin_conectividad_lan":            {"tipo": "intermedio", "descripcion": "El equipo no logra comunicarse con el router"},
+    "sin_salida_internet":             {"tipo": "intermedio", "descripcion": "La red local funciona pero no hay salida a Internet"},
+    "fallo_resolucion_dns":            {"tipo": "intermedio", "descripcion": "Hay Internet por IP pero los nombres de dominio no se resuelven"},
+    "problema_senal_wifi":             {"tipo": "intermedio", "descripcion": "La señal WiFi es deficiente"},
+
+    "dx_router_sin_energia":           {"tipo": "diagnostico", "descripcion": "Router sin energía eléctrica"},
+    "dx_caida_proveedor":              {"tipo": "diagnostico", "descripcion": "Caída del servicio del proveedor de Internet (ISP)"},
+    "dx_config_router":                {"tipo": "diagnostico", "descripcion": "Configuración errónea del router tras un cambio reciente"},
+    "dx_dns":                          {"tipo": "diagnostico", "descripcion": "Falla en la resolución de nombres (DNS)"},
+    "dx_cable_ethernet":               {"tipo": "diagnostico", "descripcion": "Cable Ethernet defectuoso o mal conectado"},
+    "dx_dhcp":                         {"tipo": "diagnostico", "descripcion": "Falla en la asignación automática de IP (DHCP)"},
+    "dx_cobertura_wifi":               {"tipo": "diagnostico", "descripcion": "Mala cobertura WiFi"},
+
+    "rec_verificar_energia":           {"tipo": "recomendacion", "descripcion": "Verifique que el router esté enchufado, pruebe otro tomacorriente y revise el adaptador de corriente. Si sigue sin encender, el equipo podría estar dañado."},
+    "rec_contactar_isp":               {"tipo": "recomendacion", "descripcion": "Reinicie el router (apague 30 s y encienda). Si la luz de Internet sigue roja, llame al proveedor (ISP) y reporte una falla de servicio."},
+    "rec_restaurar_config_router":     {"tipo": "recomendacion", "descripcion": "Revierta el cambio reciente en el router o restaure la configuración de fábrica y vuelva a ingresar los datos del proveedor."},
+    "rec_dns_alterno":                 {"tipo": "recomendacion", "descripcion": "Configure DNS alternos (8.8.8.8 y 1.1.1.1) en el equipo afectado o en el router, y ejecute ipconfig /flushdns. Si persiste, avise al proveedor."},
+    "rec_revisar_cable":               {"tipo": "recomendacion", "descripcion": "Reconecte el cable Ethernet en ambos extremos, pruebe otro puerto del router o cámbielo por otro cable."},
+    "rec_renovar_ip":                  {"tipo": "recomendacion", "descripcion": "Ejecute ipconfig /release y ipconfig /renew. Si no funciona, reinicie el router para reactivar el servidor DHCP."},
+    "rec_mejorar_cobertura":           {"tipo": "recomendacion", "descripcion": "Acerque el equipo al router, reubique el router en un lugar central y alto, o instale un repetidor/mesh WiFi."}
+  },
+
+  "reglas": [
+    {"id": "R01", "nombre": "Falla general", "antecedentes": ["sin_internet_todos_dispositivos"], "consecuentes": ["falla_general"], "prioridad": 5, "explicacion": "Si ningún dispositivo tiene Internet, la falla es de toda la red."},
+    {"id": "R02", "nombre": "Falla local", "antecedentes": ["sin_internet_un_dispositivo"], "consecuentes": ["falla_local_dispositivo"], "prioridad": 5, "explicacion": "Si solo un equipo falla y los demás funcionan, el problema está en ese equipo."},
+    {"id": "R03", "nombre": "Sin conectividad LAN", "antecedentes": ["ping_gateway_falla"], "consecuentes": ["sin_conectividad_lan"], "prioridad": 5, "explicacion": "Si el ping al router falla, el equipo no se comunica con la red local."},
+    {"id": "R04", "nombre": "Sin salida a Internet", "antecedentes": ["ping_gateway_ok", "ping_8888_falla"], "consecuentes": ["sin_salida_internet"], "prioridad": 5, "explicacion": "El router responde pero 8.8.8.8 no: la red local está bien y falla la salida a Internet."},
+    {"id": "R05", "nombre": "Fallo de resolución DNS", "antecedentes": ["ping_8888_ok", "ping_dominio_falla"], "consecuentes": ["fallo_resolucion_dns"], "prioridad": 5, "explicacion": "Hay Internet por IP pero no por nombre: el problema es la traducción de nombres (DNS)."},
+    {"id": "R06", "nombre": "Problema de señal WiFi", "antecedentes": ["wifi_senal_baja"], "consecuentes": ["problema_senal_wifi"], "prioridad": 5, "explicacion": "Pocas barras de WiFi indican una señal deficiente."},
+
+    {"id": "R07", "nombre": "Dx: router sin energía", "antecedentes": ["falla_general", "router_sin_luces"], "consecuentes": ["dx_router_sin_energia"], "prioridad": 9, "explicacion": "Toda la red cae y el router no tiene luces: no recibe energía."},
+    {"id": "R08", "nombre": "Dx: caída del proveedor", "antecedentes": ["falla_general", "sin_salida_internet", "luz_internet_roja"], "consecuentes": ["dx_caida_proveedor"], "prioridad": 7, "explicacion": "Toda la red falla, la LAN funciona y la luz WAN está roja: el problema está fuera de casa (ISP)."},
+    {"id": "R09", "nombre": "Dx: configuración del router", "antecedentes": ["falla_general", "cambio_reciente_config_router", "sin_salida_internet"], "consecuentes": ["dx_config_router"], "prioridad": 8, "explicacion": "Tras cambiar el router, toda la red perdió la salida a Internet: el cambio es sospechoso."},
+    {"id": "R10", "nombre": "Dx: fallo de DNS", "antecedentes": ["fallo_resolucion_dns"], "consecuentes": ["dx_dns"], "prioridad": 6, "explicacion": "Se llega a Internet por IP pero no por nombre: falla el DNS."},
+    {"id": "R11", "nombre": "Dx: cable Ethernet", "antecedentes": ["falla_local_dispositivo", "cable_ethernet_suelto_o_danado", "sin_conectividad_lan"], "consecuentes": ["dx_cable_ethernet"], "prioridad": 8, "explicacion": "Un solo equipo falla, no ve al router y su cable está en mal estado: el cable es la causa."},
+    {"id": "R12", "nombre": "Dx: fallo DHCP", "antecedentes": ["ip_169_254", "sin_conectividad_lan"], "consecuentes": ["dx_dhcp"], "prioridad": 6, "explicacion": "Sin IP válida y sin comunicación con el router: falla la asignación automática de IP."},
+    {"id": "R13", "nombre": "Dx: cobertura WiFi", "antecedentes": ["problema_senal_wifi", "navegacion_lenta"], "consecuentes": ["dx_cobertura_wifi"], "prioridad": 4, "explicacion": "Señal débil y lentitud: el equipo está en una zona de mala cobertura."},
+
+    {"id": "R14", "nombre": "Rec: verificar energía", "antecedentes": ["dx_router_sin_energia"], "consecuentes": ["rec_verificar_energia"], "prioridad": 9, "explicacion": "Router sin energía: se recomienda revisar la alimentación."},
+    {"id": "R15", "nombre": "Rec: contactar al ISP", "antecedentes": ["dx_caida_proveedor"], "consecuentes": ["rec_contactar_isp"], "prioridad": 7, "explicacion": "Caída del proveedor: se recomienda reiniciar y reportar al ISP."},
+    {"id": "R16", "nombre": "Rec: restaurar configuración", "antecedentes": ["dx_config_router"], "consecuentes": ["rec_restaurar_config_router"], "prioridad": 8, "explicacion": "Configuración errónea: se recomienda revertir el cambio."},
+    {"id": "R17", "nombre": "Rec: DNS alterno", "antecedentes": ["dx_dns"], "consecuentes": ["rec_dns_alterno"], "prioridad": 6, "explicacion": "Falla de DNS: se recomienda usar DNS alternos."},
+    {"id": "R18", "nombre": "Rec: revisar cable", "antecedentes": ["dx_cable_ethernet"], "consecuentes": ["rec_revisar_cable"], "prioridad": 8, "explicacion": "Cable defectuoso: se recomienda reconectarlo o cambiarlo."},
+    {"id": "R19", "nombre": "Rec: renovar IP", "antecedentes": ["dx_dhcp"], "consecuentes": ["rec_renovar_ip"], "prioridad": 6, "explicacion": "Falla de DHCP: se recomienda renovar la IP y reiniciar el router."},
+    {"id": "R20", "nombre": "Rec: mejorar cobertura", "antecedentes": ["dx_cobertura_wifi"], "consecuentes": ["rec_mejorar_cobertura"], "prioridad": 4, "explicacion": "Mala cobertura: se recomienda mejorar la señal WiFi."}
+  ]
+}
