@@ -42,7 +42,22 @@ def iniciar_interfaz(ruta_kb_inicial=None):
     # Ventana principal
     ventana = tk.Tk()
     ventana.title("Sistema Experto - Diagnóstico de fallas de red / Internet")
-    ventana.geometry("1150x680")
+    ventana.geometry("1000x630")
+    ventana.minsize(980, 640)
+
+    colores = {
+        "fondo": "#F2EEE6",
+        "beige": "#E6DCCB",
+        "blanco": "#FFFFFF",
+        "gris": "#D8D6D1",
+        "texto": "#252525",
+        "secundario": "#66635E",
+        "verde": "#4F795D",
+        "amarillo": "#D6AD42",
+        "azul": "#4C7396",
+        "rojo": "#B85C55",
+    }
+    ventana.configure(bg=colores["fondo"])
 
     # Diccionario con los datos que cambian mientras se usa el programa
     estado = {
@@ -53,40 +68,132 @@ def iniciar_interfaz(ruta_kb_inicial=None):
         "paso_actual": 0,            # cuántos pasos se han mostrado ya
     }
 
-    # Construcción de los elementos visuales (widgets)
-    # Frame = un contenedor (caja) para agrupar elementos. Este agrupa los botones.
-    marco_botones = tk.Frame(ventana)
-    marco_botones.pack(fill="x", padx=10, pady=8)
+    # Encabezado
+    encabezado = tk.Frame(ventana, bg=colores["texto"], padx=16, pady=6)
+    encabezado.pack(fill="x", padx=18, pady=(10, 6))
+    tk.Label(
+        encabezado,
+        text="SISTEMA EXPERTO",
+        font=("Segoe UI", 8, "bold"),
+        bg=colores["texto"],
+        fg=colores["blanco"],
+    ).pack(anchor="w")
+    tk.Label(
+        encabezado,
+        text="Diagnóstico de fallas de red e Internet",
+        font=("Segoe UI", 8),
+        bg=colores["texto"],
+        fg=colores["beige"],
+    ).pack(anchor="w", pady=(2, 0))
 
-    # Label = texto fijo. Aquí muestra qué base de conocimiento está cargada.
-    etiqueta_kb = tk.Label(ventana, text="Base de conocimiento: (ninguna cargada)", anchor="w")
-    etiqueta_kb.pack(fill="x", padx=10)
+    # Controles de carga e inferencia
+    marco_controles = tk.Frame(ventana, bg=colores["fondo"])
+    marco_controles.pack(fill="x", padx=18, pady=(0, 6))
+
+    marco_archivos = tk.LabelFrame(
+        marco_controles,
+        text="  Archivos y casos  ",
+        font=("Segoe UI", 10, "bold"),
+        bg=colores["blanco"],
+        fg=colores["texto"],
+        padx=10,
+        pady=7,
+        bd=1,
+        relief="solid",
+    )
+    marco_archivos.pack(side="left", fill="y", padx=(0, 10))
+
+    marco_acciones = tk.LabelFrame(
+        marco_controles,
+        text="  Acciones de inferencia  ",
+        font=("Segoe UI", 10, "bold"),
+        bg=colores["blanco"],
+        fg=colores["texto"],
+        padx=10,
+        pady=7,
+        bd=1,
+        relief="solid",
+    )
+    marco_acciones.pack(side="left", fill="both", expand=True)
+
 
     # Contenedor central: a la izquierda la lista de hechos, a la derecha los resultados.
-    marco_central = tk.Frame(ventana)
-    marco_central.pack(fill="both", expand=True, padx=10, pady=8)
+    marco_central = tk.Frame(ventana, bg=colores["fondo"])
+    marco_central.pack(fill="both", expand=True, padx=18, pady=(0, 16))
 
     # ----- Panel izquierdo: lista de observaciones -----
     # LabelFrame = contenedor con título.
-    marco_izq = tk.LabelFrame(marco_central, text="Hechos iniciales (seleccione lo que observa)")
-    marco_izq.pack(side="left", fill="y")
+    marco_izq = tk.LabelFrame(
+        marco_central,
+        text="  Hechos iniciales  ",
+        font=("Segoe UI", 10, "bold"),
+        bg=colores["blanco"],
+        fg=colores["texto"],
+        padx=10,
+        pady=7,
+        bd=1,
+        relief="solid",
+    )
+    marco_izq.pack(side="left", fill="both", padx=(0, 10))
 
     # Listbox = lista de opciones. selectmode=MULTIPLE permite marcar varias a la vez.
     # exportselection=False evita que la selección se pierda al hacer clic en otros elementos.
-    lista = tk.Listbox(marco_izq, selectmode=tk.MULTIPLE, width=62, height=28, exportselection=False)
+    lista = tk.Listbox(
+        marco_izq,
+        selectmode=tk.MULTIPLE,
+        width=36,
+        height=24,
+        exportselection=False,
+        font=("Segoe UI", 10),
+        bg=colores["blanco"],
+        fg=colores["texto"],
+        selectbackground=colores["beige"],
+        selectforeground=colores["texto"],
+        highlightthickness=1,
+        highlightbackground=colores["gris"],
+        relief="flat",
+    )
 
     # Scrollbar = barra de desplazamiento vertical, conectada a la lista con command=lista.yview.
-    barra = tk.Scrollbar(marco_izq, command=lista.yview)
+    barra = tk.Scrollbar(
+        marco_izq,
+        command=lista.yview,
+        bg=colores["beige"],
+        troughcolor=colores["fondo"],
+        relief="flat",
+    )
     lista.config(yscrollcommand=barra.set)  # la lista le avisa a la barra cuando se mueve
-    barra.pack(side="right", fill="y")
-    lista.pack(side="left", fill="y")
+    barra.pack(side="right", fill="y", padx=(6, 0))
+    lista.pack(side="left", fill="both", expand=True)
 
     # ----- Panel derecho: cuadro de texto con los resultados -----
-    marco_der = tk.LabelFrame(marco_central, text="Resultados de la inferencia")
-    marco_der.pack(side="right", fill="both", expand=True, padx=(10, 0))
+    marco_der = tk.LabelFrame(
+        marco_central,
+        text="  Resultados de la inferencia  ",
+        font=("Segoe UI", 8, "bold"),
+        bg=colores["blanco"],
+        fg=colores["texto"],
+        padx=8,
+        pady=8,
+        bd=1,
+        relief="solid",
+    )
+    marco_der.pack(side="right", fill="both", expand=True)
 
     # ScrolledText = cuadro de texto con barra. wrap="word" parte las líneas en espacios, no a mitad de palabra.
-    texto = scrolledtext.ScrolledText(marco_der, wrap="word", font=("Courier", 10))
+    texto = scrolledtext.ScrolledText(
+        marco_der,
+        wrap="word",
+        font=("Consolas", 10),
+        bg=colores["blanco"],
+        fg=colores["texto"],
+        insertbackground=colores["texto"],
+        padx=12,
+        pady=12,
+        relief="flat",
+        highlightthickness=1,
+        highlightbackground=colores["gris"],
+    )
     texto.pack(fill="both", expand=True)
 
     # Funciones que se ejecutan al presionar los botones
@@ -115,10 +222,7 @@ def iniciar_interfaz(ruta_kb_inicial=None):
                 estado["ids_observaciones"].append(nombre)  # y se recuerda el nombre del hecho
 
         # .config(text=...) cambia el texto de la etiqueta.
-        nombre_base = base.get("nombre", ruta)
-        etiqueta_kb.config(
-            text=f"Base de conocimiento: {nombre_base}  |  {len(base['reglas'])} reglas  |  {ruta}"
-        )
+
         texto.delete("1.0", tk.END)  # "1.0" = inicio del texto (línea 1, carácter 0)
         escribir(f"Base de conocimiento cargada: {len(base['reglas'])} reglas.")
         escribir("Seleccione los hechos observados (o cargue el archivo de casos) y presione 'Ejecutar'.")
@@ -242,23 +346,72 @@ def iniciar_interfaz(ruta_kb_inicial=None):
         texto.delete("1.0", tk.END)
 
     # Botones y menú desplegable (command = función que se ejecuta al hacer clic)
-    def crear_boton(nombre, funcion):
-        tk.Button(marco_botones, text=nombre, command=funcion).pack(side="left", padx=3)
+    def crear_boton(parent, nombre, funcion, fondo, texto_color):
+        return tk.Button(
+            parent,
+            text=nombre,
+            command=funcion,
+            font=("Segoe UI", 10, "bold"),
+            bg=fondo,
+            fg=texto_color,
+            activebackground=fondo,
+            activeforeground=texto_color,
+            relief="flat",
+            bd=0,
+            padx=12,
+            pady=7,
+            cursor="hand2",
+        )
 
-    crear_boton("1. Cargar base de conocimiento", cargar_kb)
-    crear_boton("2. Cargar archivo de casos", cargar_casos_archivo)
+    crear_boton(
+        marco_archivos,
+        "Cargar base de conocimiento",
+        cargar_kb,
+        colores["texto"],
+        colores["blanco"],
+    ).pack(fill="x", pady=(0, 6))
+    crear_boton(
+        marco_archivos,
+        "Cargar archivo de casos",
+        cargar_casos_archivo,
+        colores["beige"],
+        colores["texto"],
+    ).pack(fill="x", pady=(0, 7))
 
     # Combobox = menú desplegable. state="readonly" = solo se puede elegir, no escribir.
-    menu_casos = ttk.Combobox(marco_botones, state="readonly", width=34)
-    menu_casos.pack(side="left", padx=3)
+    estilo = ttk.Style(ventana)
+    estilo.configure(
+        "Casos.TCombobox",
+        fieldbackground=colores["blanco"],
+        background=colores["beige"],
+        foreground=colores["texto"],
+        padding=6,
+    )
+    menu_casos = ttk.Combobox(
+        marco_archivos,
+        state="readonly",
+        width=32,
+        style="Casos.TCombobox",
+    )
+    menu_casos.pack(fill="x")
 
     # bind() conecta un evento con una función: al elegir una opción se llama a elegir_caso.
     menu_casos.bind("<<ComboboxSelected>>", elegir_caso)
 
-    crear_boton("3. Ejecutar", ejecutar)
-    crear_boton("Siguiente paso", siguiente_paso)
-    crear_boton("Mostrar todo", mostrar_todo)
-    crear_boton("Limpiar", limpiar)
+    for columna in range(2):
+        marco_acciones.grid_columnconfigure(columna, weight=1, uniform="acciones")
+    crear_boton(
+        marco_acciones, "Ejecutar", ejecutar, colores["verde"], colores["blanco"]
+    ).grid(row=0, column=0, sticky="ew", padx=4, pady=4)
+    crear_boton(
+        marco_acciones, "Siguiente paso", siguiente_paso, colores["amarillo"], colores["texto"]
+    ).grid(row=0, column=1, sticky="ew", padx=4, pady=4)
+    crear_boton(
+        marco_acciones, "Mostrar todo", mostrar_todo, colores["azul"], colores["blanco"]
+    ).grid(row=1, column=0, sticky="ew", padx=4, pady=4)
+    crear_boton(
+        marco_acciones, "Limpiar", limpiar, colores["rojo"], colores["blanco"]
+    ).grid(row=1, column=1, sticky="ew", padx=4, pady=4)
 
     # Si main.py nos pasó una base por defecto, la cargamos al abrir la ventana.
     if ruta_kb_inicial:
